@@ -16,7 +16,7 @@
     "angular"
   ],
   "moduleType": [],
-  "homepage": "https://github.com/hearsid/ng-html-to-pdf-save",
+  "homepage": "https://github.com/tau2020/angular-print-pdf",
   "ignore": [
     "**/.*",
     "node_modules",
@@ -30,14 +30,12 @@
     "jquery": "^1.12",
     "jsPDF": "git://github.com/MrRio/jsPDF.git"
   },
-  "_release": "da9894b508",
+  "_release": "95d4bc1",
   "_resolution": {
-    "type": "branch",
-    "branch": "master",
-    "commit": "da9894b5080e0fa9c8d8a46c89cbd2f87b17b6c3"
+    "type": "commit",
+    "commit": "95d4bc1"
   },
-  "_source": "https://github.com/hearsid/ng-html-to-pdf-save.git",
-  "_target": "*",
-  "_originalSource": "angular-save-html-to-pdf",
-  "_direct": true
+  "_source": "https://git@github.com/tau2020/angular-print-pdf.git",
+  "_target": "95d4bc1",
+  "_originalSource": "git+https://git@github.com/tau2020/angular-print-pdf.git"
 }
