@@ -1,194 +1,198 @@
 
-angular.module('htmlToPdfSave' , []) ;
+angular.module('htmlToPdfSave', []);
 
 
 
 
 
 angular.module('htmlToPdfSave')
-.directive('pdfSaveButton' , ['$rootScope' , '$pdfStorage' , function($rootScope , $pdfStorage) {
+	.directive('pdfSaveButton', ['$rootScope', '$pdfStorage', function ($rootScope, $pdfStorage) {
 
-	return {
-		restrict: 'A',
-		link : function(scope , element , attrs ) {
-			$pdfStorage.pdfSaveButtons.push(element) ;
+		return {
+			restrict: 'A',
+			link: function (scope, element, attrs) {
+				$pdfStorage.pdfSaveButtons.push(element);
 
-			scope.buttonText = "Button";
-			element.on('click' , function() {
-				var activePdfSaveId = attrs.pdfSaveButton ;
-				var activePdfSaveName = attrs.pdfName;
-				$rootScope.$broadcast('savePdfEvent' , {activePdfSaveId : activePdfSaveId, activePdfSaveName: activePdfSaveName}) ;
+				scope.buttonText = "Button";
+				element.on('click', function () {
+					var activePdfSaveId = attrs.pdfSaveButton;
+					var activePdfSaveName = attrs.pdfName;
+					$rootScope.$broadcast('savePdfEvent', { activePdfSaveId: activePdfSaveId, activePdfSaveName: activePdfSaveName });
 
 
-			})
+				})
+			}
+
+
 		}
 
-
-	}
-
-}]) ;
+	}]);
 
 
 angular.module('htmlToPdfSave')
-.directive('pdfSaveContent' ,  [ '$rootScope' , '$pdfStorage' , function ($rootScope , $pdfStorage) {
+	.directive('pdfSaveContent', ['$rootScope', '$pdfStorage', function ($rootScope, $pdfStorage) {
 
 
-			return {
-				link : function(scope , element , attrs ) {
+		return {
+			link: function (scope, element, attrs) {
 
-					$pdfStorage.pdfSaveContents.push(element) ;
+				$pdfStorage.pdfSaveContents.push(element);
 
-					var myListener = scope.$on('savePdfEvent' , function(event , args) {
+				var myListener = scope.$on('savePdfEvent', function (event, args) {
 
-					var currentElement = element ;
-						var currentElementId = currentElement[0].getAttribute('pdf-save-content') ;
+					var currentElement = element;
+					var currentElementId = currentElement[0].getAttribute('pdf-save-content');
 
 					// save a call of query selector because angular loads the element on load by default
 					//	var elem = document.querySelectorAll('[pdf-save]') ;
-						var elem = $pdfStorage.pdfSaveContents ;
-						var broadcastedId = args.activePdfSaveId ;
-						var broadcastedName = args.activePdfSaveName || 'default.pdf';
+					var elem = $pdfStorage.pdfSaveContents;
+					var broadcastedId = args.activePdfSaveId;
+					var broadcastedName = args.activePdfSaveName || 'default.pdf';
 
 
 
 					//iterate through the element array to match the id
-					for(var i = 0;i < elem.length ; i++) {
+					for (var i = 0; i < elem.length; i++) {
 
 						// handle the case of elem getting length
-					//	if(i == 'length' || i == 'item')
-					//		continue ;
+						//	if(i == 'length' || i == 'item')
+						//		continue ;
 
 						// if the event is received by other element than for whom it what propogated for continue
 
 
-						if(!matchTheIds(broadcastedId , currentElementId))
-							continue ;
+						if (!matchTheIds(broadcastedId, currentElementId))
+							continue;
 
-						var single = elem[i] ;
+						var single = elem[i];
 						var singleElement = single[0];
 						//var parent = single[0] ;
-						var pdfId = singleElement.getAttribute('pdf-save-content') ;
+						var pdfId = singleElement.getAttribute('pdf-save-content');
 
-						if(matchTheIds(pdfId , broadcastedId)) {
+						if (matchTheIds(pdfId, broadcastedId)) {
 							console.log('Id is same');
-							convertToPdf(elem , pdfId);
-							break ; // exit the loop once pdf gets printed
+							convertToPdf(elem, pdfId);
+							break; // exit the loop once pdf gets printed
 						}
 
 					}
 
-					function matchTheIds(elemId , broadcastedId) {
-						return elemId == broadcastedId ;
+					function matchTheIds(elemId, broadcastedId) {
+						return elemId == broadcastedId;
 					}
 
-					function convertToPdf(theElement , id) {
+					function convertToPdf(theElement, id) {
 						//theElement = [theElement];
-						convert(theElement , id ) ;
+						convert(theElement, id);
 
 					}
 
 
-					function convert(theElement , id) {
-						var quotes = $('div[pdf-save-content='+id+']')[0];
-				        html2canvas(quotes, {
-				            onrendered: function(canvas) {
-				            var pdf = new jsPDF('p', 'px', [1190.55, 1683.78]);
-				            for (var i = 0; i <= quotes.clientHeight/1600 ; i++) {
-				                var srcImg  = canvas;
-				                var sX      = 0;
-				                var sY      =2270 *i; // start2270  pixels down for every new page
-				                var sWidth  = 1600  ;
-				                var sHeight =2270 ;
-				                var dX      = 0;
-				                var dY      = 0;
-				                var dWidth  = 1600  ;
-				                var dHeight =2270 ;
-
-				                window.onePageCanvas = document.createElement("canvas");
-				                onePageCanvas.setAttribute('width', 1600  );
-				                onePageCanvas.setAttribute('height',2270 );
-				                var ctx = onePageCanvas.getContext('2d');
-				                // details on this usage of this function: 
-				                // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
-				                ctx.drawImage(srcImg,sX,sY,sWidth,sHeight,dX,dY,dWidth,dHeight);
-
-				                // document.body.appendChild(canvas);
-				                var canvasDataURL = onePageCanvas.toDataURL("image/png", 1.0);
-
-				                var width         = onePageCanvas.width;
-				                var height        = onePageCanvas.clientHeight;
-
-				                //! If we're on anything other than the first page,
-				                // add another page
-				                if (i > 0) {
-				                    pdf.addPage(1190.55, 1683.78); //8.5" x 11" in pts (in*72)
-				                }
-				                //! now we declare that we're working on that page
-				                pdf.setPage(i+1);
-				                //! now we add content to that page!
-				                pdf.addImage(canvasDataURL, 'PNG', 20, 40, (width*.62), (height*.62));
-
-				            }
-				            //! after the for loop is finished running, we save the pdf.
-				            pdf.save(broadcastedName);
-				        }
-				      });
-					/*	var element = $('[pdf-save-content='+id+']') ,
-						cache_width = element.width(),
-						 a2  =[ 1600, 1190.55];  // for a2 size paper width and height
+					function convert(theElement, id) {
+						var quotes = $('div[pdf-save-content=' + id + ']')[0];
 
 
-						 $('body').scrollTop(0);
-						 createPDF();
-*/
+
+
+						html2canvas(quotes, {
+						background:'#fff',	onrendered: function (canvas) {
+								var pdf = new jsPDF('p', 'px', [595.28,  841.89]);
+								for (var i = 0; i <= quotes.clientHeight /  841.89; i++) {
+									var srcImg = canvas;
+									var sX = 0;
+									var sY = 1200 * i; // start 841.89  pixels down for every new page
+									var sWidth = 1600;
+									var sHeight = 1200;
+									var dX = 0;
+									var dY = 0;
+									var dWidth = 1600;
+									var dHeight = 1200;
+
+									window.onePageCanvas = document.createElement("canvas");
+									onePageCanvas.setAttribute('width', 1600);
+									onePageCanvas.setAttribute('height', 1200);
+									var ctx = onePageCanvas.getContext('2d');
+									// details on this usage of this function: 
+									// https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Using_images#Slicing
+									ctx.drawImage(srcImg, sX, sY, sWidth, sHeight, dX, dY, dWidth, dHeight);
+
+									// document.body.appendChild(canvas);
+									var canvasDataURL = onePageCanvas.toDataURL("image/jpeg", 1.0);
+
+									var width = onePageCanvas.width;
+									var height = onePageCanvas.clientHeight;
+
+									//! If we're on anything other than the first page,
+									// add another page
+									if (i > 0) {
+										pdf.addPage(595.28,  841.89); //8.5" x 11" in pts (in*72)
+									}
+									//! now we declare that we're working on that page
+									pdf.setPage(i + 1);
+									//! now we add content to that page!
+									pdf.addImage(canvasDataURL, 'JPEG', 20, 40, (width * .62), (height * .62));
+
+								}
+								//! after the for loop is finished running, we save the pdf.
+								pdf.save(broadcastedName);
+							},
+						});
+						/*	var element = $('[pdf-save-content='+id+']') ,
+							cache_width = element.width(),
+							 a2  =[ 595.28, 841.89];  // for a2 size paper width and height
+	
+	
+							 $('body').scrollTop(0);
+							 createPDF();
+	*/
 						//create pdf
-					/*	function createPDF(){
-							getCanvas().then(function(canvas){
-								console.log('resolved get canvas');
-								var img = canvas.toDataURL("image/png"),
-								doc = new jsPDF({
-									unit:'px',
-									format:'a2'
-								});
-								doc.addImage(img, 'JPEG', 20, 20);
-								doc.save(broadcastedName);
-								element.width(cache_width);
-
-							})
-						}*/
+						/*	function createPDF(){
+								getCanvas().then(function(canvas){
+									console.log('resolved get canvas');
+									var img = canvas.toDataURL("image/png"),
+									doc = new jsPDF({
+										unit:'px',
+										format:'a2'
+									});
+									doc.addImage(img, 'JPEG', 20, 20);
+									doc.save(broadcastedName);
+									element.width(cache_width);
+	
+								})
+							}*/
 
 						// create canvas object
-					/*	function getCanvas(){
-							element.width((a2[0]*1.33333) -80).css('max-width','none');
-							return html2canvas(element,{
-								imageTimeout:2270,
-								removeContainer:true
-							});
-						}*/
+						/*	function getCanvas(){
+								element.width((a2[0]*1.33333) -80).css('max-width','none');
+								return html2canvas(element,{
+									imageTimeout: 841.89,
+									removeContainer:true
+								});
+							}*/
 
 
 					}
 
 
 
-			}) ;
-			// handle the memory leak
-			// unbind the event
-			scope.$on('$destroy', myListener);
+				});
+				// handle the memory leak
+				// unbind the event
+				scope.$on('$destroy', myListener);
 
-}
+			}
 
-}
+		}
 
-}]) ;
+	}]);
 
 
-angular.module('htmlToPdfSave') 
-.service('$pdfStorage' , function() {
-	this.pdfSaveButtons = [] ;
-	this.pdfSaveContents = [] ;
-})
-.service('pdfSaveConfig' , function() {
-	this.pdfName = "default.pdf";
-})
+angular.module('htmlToPdfSave')
+	.service('$pdfStorage', function () {
+		this.pdfSaveButtons = [];
+		this.pdfSaveContents = [];
+	})
+	.service('pdfSaveConfig', function () {
+		this.pdfName = "default.pdf";
+	})
 
